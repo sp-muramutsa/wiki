@@ -20,8 +20,8 @@ def entry(request, title):
         })
 
     else: 
-        return render(request, "encyclopedia/404.html", {
-            "title": title
+        return render(request, "encyclopedia/error.html", {
+            "message": f"\"{title}\" Not Found In Wiki Entries"
         })
     
 def search(request):
@@ -39,6 +39,10 @@ def search(request):
                 "matches": matches,
                 "query": query
             })
+        else:
+            return render(request, "encyclopedia/error.html", {
+                "message": f"\"{query}\" Not Found in Wiki Entries"
+            })
     else:
         return redirect(reverse("index"))
 
@@ -51,19 +55,50 @@ def new(request):
             content = form.cleaned_data["content"]
             if util.get_entry(title):
                 return render(request, "encyclopedia/error.html", {
-                    "message": "Entry Already Exosts in Wiki",
+                    "message": "Entry Already Exists in Wiki",
                     "title": title
                 })
             else:
                 util.save_entry(title, content)
                 return HttpResponseRedirect(reverse("encyclopedia:entry", kwargs={"title":title}))
         else:
-            pass
+            return render(request, "encyclopedia/new.html", {
+                "form": form
+            })
     else:
         form = NewEntryForm()
         return render(request, "encyclopedia/new.html", {
             "form": form
         })
+
+def edit(request, title):
+    if request.method == "POST":
+        form = NewEntryForm(request.POST)
+
+        if form.is_valid():
+            print("Form is valid.")
+            new_content = form.cleaned_data["content"]
+            print(new_content)
+            util.save_entry(title, new_content)
+            return HttpResponseRedirect(reverse("encyclopedia:entry", kwargs={"title":title}))
+        else:
+            print("Invalid form")
+            return render(request, "encyclopedia/edit.html", {
+                "form": form,
+                "title": title
+            })
+
+    
+    else:
+        form = NewEntryForm(initial={"title": title, "content": util.get_entry(title)})
+        form.fields['title'].widget.attrs["readonly"] = True
+        return render(request, "encyclopedia/edit.html", {
+            "form": form,
+            "title": title
+        })
+
+
+
 
         
         
