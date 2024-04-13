@@ -5,6 +5,8 @@ from . import util
 
 from .forms import NewEntryForm
 
+import random
+
 
 def index(request):
     return render(request, "encyclopedia/index.html", {
@@ -76,13 +78,11 @@ def edit(request, title):
         form = NewEntryForm(request.POST)
 
         if form.is_valid():
-            print("Form is valid.")
             new_content = form.cleaned_data["content"]
             print(new_content)
             util.save_entry(title, new_content)
             return HttpResponseRedirect(reverse("encyclopedia:entry", kwargs={"title":title}))
         else:
-            print("Invalid form")
             return render(request, "encyclopedia/edit.html", {
                 "form": form,
                 "title": title
@@ -98,7 +98,12 @@ def edit(request, title):
         })
 
 
+def random_page(request):
+    entries = util.list_entries()
+    random_entry = random.choice(entries)
+    return redirect(reverse("encyclopedia:entry", kwargs={"title" : random_entry}))
 
+    
 
         
         
