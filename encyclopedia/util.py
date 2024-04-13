@@ -1,4 +1,5 @@
 import re
+from markdown2 import markdown
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -9,8 +10,13 @@ def list_entries():
     Returns a list of all names of encyclopedia entries.
     """
     _, filenames = default_storage.listdir("entries")
-    return list(sorted(re.sub(r"\.md$", "", filename)
-                for filename in filenames if filename.endswith(".md")))
+    return list(
+        sorted(
+            re.sub(r"\.md$", "", filename)
+            for filename in filenames
+            if filename.endswith(".md")
+        )
+    )
 
 
 def save_entry(title, content):
@@ -35,3 +41,7 @@ def get_entry(title):
         return f.read().decode("utf-8")
     except FileNotFoundError:
         return None
+
+
+def html_to_markdown(content):
+    return markdown(content)
